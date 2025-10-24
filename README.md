@@ -30,12 +30,14 @@ This project keeps the **excellent** parts of SpecKit:
 
 And simplifies everything else:
 
-- ✅ **2-3 files per feature** instead of 8-12 (75-85% reduction)
+- ✅ **2-3 files per feature** instead of 8-12 (60-70% reduction)
 - ✅ **Consolidated spec.md** that includes tech approach, data model, and acceptance criteria
-- ✅ **No separate plan/research/contracts/checklists** - only what you need
+- ✅ **No separate plan/research/contracts** - only what you need
 - ✅ **Shorter templates** (50-70% less content to review)
 - ✅ **Git worktree integration** - each feature in its own isolated workspace
-- ✅ **Pure slash commands** - no bash script dependencies
+- ✅ **Bash scripts for deterministic operations** (branch numbering, path detection)
+- ✅ **Automatic spec validation** with quality checklists
+- ✅ **Auto-update CLAUDE.md** with tech stack from specs
 
 ## File Count Comparison
 
@@ -61,10 +63,13 @@ Specs/001-feature/
 **Streamlined Specs** per feature:
 ```
 .worktrees/001-feature/Specs/001-feature/
-├── spec.md     # Consolidated (includes plan, research, data model)
-└── tasks.md    # Executable implementation
+├── spec.md        # Consolidated (includes plan, research, data model)
+├── tasks.md       # Executable implementation
+└── checklist.md   # Quality validation (auto-generated)
 ```
-**Total: 2 files** (plus 1 project-level constitution.md)
+**Total: 3 files** (plus 1 project-level constitution.md)
+
+**Still 60-70% fewer files than SpecKit!**
 
 ## Installation
 
@@ -218,6 +223,67 @@ Benefits:
 - Easy context switching: `cd .worktrees/001-user-auth/`
 - Clean separation of concerns
 
+## Quality Features
+
+### Automatic Spec Validation
+
+When you run `/specify`, the system automatically validates your spec against a quality checklist:
+
+```
+✓ No implementation details (languages, frameworks, APIs)
+✓ Requirements are testable and unambiguous
+✓ Success criteria are measurable and technology-agnostic
+✓ All acceptance scenarios defined with Given/When/Then
+✓ User stories are independently testable
+✓ P1 defines a viable MVP
+```
+
+**What happens:**
+1. Spec is generated from your description
+2. Checklist is created automatically
+3. Spec is validated against checklist
+4. If issues found: spec is auto-fixed (up to 3 iterations)
+5. Final checklist saved at `Specs/NNN-feature/checklist.md`
+
+**Benefits:**
+- Catches incomplete requirements before implementation
+- Ensures specs are testable and measurable
+- Saves time fixing issues later
+- You still review the final spec, but quality is pre-validated
+
+### Automatic CLAUDE.md Updates
+
+When you run `/tasks`, your `CLAUDE.md` is automatically updated with the tech stack:
+
+```markdown
+## Active Technologies
+<!-- SPEC_TECH_START -->
+- 001-user-auth: Swift 6.2 + SwiftUI, Clean Architecture (added 2025-10-24)
+- 002-notifications: EventKit, UserNotifications (added 2025-10-25)
+<!-- SPEC_TECH_END -->
+```
+
+**Benefits:**
+- Always know what tech is used in each feature
+- Claude has current context for new conversations
+- Manual additions preserved (use markers)
+- No need to update CLAUDE.md manually
+
+### Bash Scripts for Reliability
+
+Deterministic operations use bash scripts instead of Claude executing commands inline:
+
+**Scripts** (in `~/.claude/spec-scripts/`):
+- `create-feature.sh` - Branch naming, number detection, worktree creation
+- `find-spec.sh` - Locates current spec/tasks files reliably
+- `update-context.sh` - Parses spec and updates CLAUDE.md
+
+**Benefits:**
+- Consistent branch numbering (no duplicates)
+- Reliable path detection (no hallucination)
+- Deterministic behavior (testable, debuggable)
+- SpecKit-style bash variable output (`eval $(script)`)
+
 ## Available Commands
 
 ### `/setup-specs`
@@ -340,10 +406,11 @@ cd .worktrees/002-reminders/
 
 | Aspect | SpecKit | Streamlined Specs |
 |--------|---------|-------------------|
-| Files per feature | 8-12 files | 2-3 files |
+| Files per feature | 8-12 files | 3 files |
 | Template length | Long, extensive | Short, focused |
-| Validation | Multi-pass | Single review |
-| Dependencies | Bash scripts | Pure slash commands |
+| Spec validation | Multi-pass with checklists | Automatic with checklist |
+| Context management | Manual | Auto-update CLAUDE.md |
+| Bash scripts | 7 complex scripts | 4 simple scripts |
 | Worktree support | No | Yes (built-in) |
 | Context usage | High (many files) | Low (consolidated) |
 | Setup complexity | Medium | Low |
@@ -355,19 +422,25 @@ cd .worktrees/002-reminders/
 ## File Structure
 
 ```
-streamlined-specs/
+SpecKit/
 ├── install.sh                    # Installation script
 ├── README.md                     # This file
 ├── templates/
 │   ├── constitution-template.md  # Project principles template
 │   ├── spec-template.md          # Feature spec template (consolidated)
-│   └── tasks-template.md         # Task breakdown template
+│   ├── tasks-template.md         # Task breakdown template
+│   └── checklist-template.md     # Spec validation checklist
+├── scripts/
+│   ├── common.sh                 # Shared utilities
+│   ├── create-feature.sh         # Branch/worktree creation
+│   ├── find-spec.sh              # Spec file detection
+│   └── update-context.sh         # CLAUDE.md updater
 └── commands/
     ├── setup-specs.md            # Initialize project
     ├── constitution.md           # Define principles
-    ├── specify.md                # Create feature spec + worktree
+    ├── specify.md                # Create feature spec + worktree + validation
     ├── clarify.md                # Optional clarification
-    ├── tasks.md                  # Generate tasks
+    ├── tasks.md                  # Generate tasks + update context
     └── implement.md              # Execute implementation
 ```
 

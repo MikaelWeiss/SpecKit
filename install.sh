@@ -21,15 +21,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 TEMPLATES_DIR="$CLAUDE_DIR/spec-templates"
 COMMANDS_DIR="$CLAUDE_DIR/commands"
+SCRIPTS_DIR="$CLAUDE_DIR/spec-scripts"
 
 # Source directories
 SOURCE_TEMPLATES="$SCRIPT_DIR/templates"
 SOURCE_COMMANDS="$SCRIPT_DIR/commands"
+SOURCE_SCRIPTS="$SCRIPT_DIR/scripts"
 
 # Create target directories if they don't exist
 echo -e "${YELLOW}Creating directories...${NC}"
 mkdir -p "$TEMPLATES_DIR"
 mkdir -p "$COMMANDS_DIR"
+mkdir -p "$SCRIPTS_DIR"
 echo -e "${GREEN}✓${NC} Directories ready"
 echo ""
 
@@ -52,6 +55,28 @@ for template in "$SOURCE_TEMPLATES"/*.md; do
     fi
 done
 echo -e "${GREEN}✓${NC} Installed $template_count templates"
+echo ""
+
+# Install scripts
+echo -e "${YELLOW}Installing scripts...${NC}"
+script_count=0
+for script in "$SOURCE_SCRIPTS"/*.sh; do
+    if [ -f "$script" ]; then
+        filename=$(basename "$script")
+        target="$SCRIPTS_DIR/$filename"
+
+        if [ -f "$target" ]; then
+            echo -e "  ${BLUE}↻${NC} Updating $filename"
+        else
+            echo -e "  ${GREEN}+${NC} Installing $filename"
+        fi
+
+        cp "$script" "$target"
+        chmod +x "$target"  # Make executable
+        ((script_count++))
+    fi
+done
+echo -e "${GREEN}✓${NC} Installed $script_count scripts"
 echo ""
 
 # Install commands
@@ -82,6 +107,7 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 echo "Installed:"
 echo "  • $template_count templates → $TEMPLATES_DIR/"
+echo "  • $script_count scripts → $SCRIPTS_DIR/"
 echo "  • $command_count commands → $COMMANDS_DIR/"
 echo ""
 echo "Available commands:"

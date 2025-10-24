@@ -17,10 +17,11 @@ Identify and resolve critical ambiguities in the feature spec through targeted c
 ## Execution Flow
 
 1. **Find current spec**:
-   - Determine current worktree or working directory
-   - Look for spec in `Specs/<branch-name>/spec.md`
-   - If not found, look in `.worktrees/*/Specs/*/spec.md`
-   - ERROR if no spec found: "Run /specify first to create a feature spec"
+   - Run `~/.claude/spec-scripts/find-spec.sh`
+   - Script outputs bash variables: REPO_ROOT, FEATURE_DIR, SPEC_FILE, etc.
+   - Eval the output to set variables: `eval $(~/.claude/spec-scripts/find-spec.sh)`
+   - Script validates that spec.md exists
+   - If validation fails: ERROR with helpful message
 
 2. **Scan for clarification needs**:
    - Search for `[NEEDS CLARIFICATION: ...]` markers in spec

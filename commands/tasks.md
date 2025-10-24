@@ -17,9 +17,11 @@ Generate a structured, dependency-ordered task list organized by user story, ena
 ## Execution Flow
 
 1. **Find current spec**:
-   - Locate spec.md in current worktree or working directory
-   - Path patterns: `Specs/<branch>/spec.md` or `.worktrees/*/Specs/*/spec.md`
-   - ERROR if not found: "Run /specify first to create a feature spec"
+   - Run `~/.claude/spec-scripts/find-spec.sh`
+   - Script outputs bash variables: REPO_ROOT, FEATURE_DIR, SPEC_FILE, TASKS_FILE, etc.
+   - Eval the output to set variables: `eval $(~/.claude/spec-scripts/find-spec.sh)`
+   - Script validates that spec.md exists
+   - If validation fails: ERROR with helpful message
 
 2. **Load and analyze spec**:
    - Extract user stories with priorities (P1, P2, P3, ...)
@@ -97,16 +99,24 @@ Generate a structured, dependency-ordered task list organized by user story, ena
    - Replace placeholder content with actual tasks
 
 9. **Write tasks file**:
-   - Path: `Specs/<branch>/tasks.md` (same directory as spec.md)
+   - Path: $TASKS_FILE (from script output, same directory as spec.md)
    - Fill all template placeholders
    - Ensure every task has proper format and file path
 
-10. **Report completion**:
+10. **Update CLAUDE.md with tech stack**:
+    - Run `~/.claude/spec-scripts/update-context.sh`
+    - Script extracts tech stack from spec.md Technical Approach section
+    - Updates CLAUDE.md's "Active Technologies" section
+    - Preserves manual additions (uses markers)
+    - If CLAUDE.md doesn't exist or has no tech section, script will note and skip
+
+11. **Report completion**:
     - Path to tasks.md
     - Total task count
     - Task count per user story
     - MVP scope (typically just User Story 1 / P1 tasks)
     - Parallel opportunities identified
+    - Note if CLAUDE.md was updated with tech stack
     - Next step: "Run /implement to execute tasks"
 
 ## Quality Rules

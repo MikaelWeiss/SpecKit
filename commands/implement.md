@@ -17,14 +17,16 @@ Execute the implementation plan by processing and completing all tasks defined i
 ## Execution Flow
 
 1. **Find current tasks file**:
-   - Locate tasks.md in current worktree or working directory
-   - Path patterns: `Specs/<branch>/tasks.md` or `.worktrees/*/Specs/*/tasks.md`
-   - ERROR if not found: "Run /tasks first to generate implementation tasks"
+   - Run `~/.claude/spec-scripts/find-spec.sh --require-tasks`
+   - Script outputs bash variables: REPO_ROOT, FEATURE_DIR, SPEC_FILE, TASKS_FILE, etc.
+   - Eval the output to set variables: `eval $(~/.claude/spec-scripts/find-spec.sh --require-tasks)`
+   - Script validates that both spec.md and tasks.md exist
+   - If validation fails: ERROR with helpful message
 
 2. **Load implementation context**:
-   - **Required**: Read tasks.md for complete task list
-   - **Required**: Read spec.md for feature context and acceptance criteria
-   - **Optional**: Read constitution.md for project principles
+   - **Required**: Read $TASKS_FILE for complete task list
+   - **Required**: Read $SPEC_FILE for feature context and acceptance criteria
+   - **Optional**: Read $REPO_ROOT/Specs/constitution.md for project principles
    - Parse task phases and dependencies
    - Identify task IDs, descriptions, file paths, parallel markers [P], story markers [US#]
 
