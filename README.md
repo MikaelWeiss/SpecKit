@@ -39,6 +39,39 @@ And simplifies everything else:
 - ✅ **Automatic spec validation** with quality checklists
 - ✅ **Auto-update CLAUDE.md** with tech stack from specs
 
+## Key Differences from GitHub SpecKit
+
+### The Core Philosophy
+
+**GitHub SpecKit**: Strict separation between "what" (requirements) and "how" (implementation)
+- Specs must be technology-agnostic
+- Separate files for spec, plan, research, data model
+- Optimized for teams with non-technical stakeholders reviewing requirements
+
+**Streamlined Specs**: Pragmatic consolidation for developer-centric teams
+- Requirements + technical approach in one document
+- Consolidated spec.md with everything needed to implement
+- Optimized for solo developers and small technical teams
+
+### What This Means for You
+
+**Choose GitHub SpecKit if:**
+- Non-technical stakeholders need to review requirements
+- You need formal API contracts (OpenAPI, GraphQL schemas)
+- Complex features require extensive design exploration
+- Large teams need strict separation of concerns
+
+**Choose Streamlined Specs if:**
+- You're a solo developer or small technical team (1-3 devs)
+- Developers are the primary reviewers of specs
+- You want faster iteration with less documentation overhead
+- You value consolidated, scannable specs over separation
+- You want to work on multiple features in parallel (worktree support)
+
+### The Trade-off
+
+Streamlined Specs sacrifices **thoroughness and stakeholder-friendliness** for **speed and simplicity**. You get 60-70% fewer files to maintain, but you lose the ability to share pure requirements docs with non-technical reviewers. This is an intentional trade-off optimized for developer productivity.
+
 ## File Count Comparison
 
 **SpecKit** per feature:
