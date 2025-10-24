@@ -30,16 +30,21 @@ Create a new feature specification in a dedicated worktree with a consolidated s
    - Script outputs bash variables: BRANCH_NAME, WORKTREE_PATH, SPEC_DIR, SPEC_FILE
    - Eval the output to set variables: `eval $(~/.claude/spec-scripts/create-feature.sh "$ARGUMENTS")`
    - Script handles:
+     - **Detecting if inside a worktree**: If currently in `.worktrees/` folder, automatically navigates to main repo root
      - Generating short-name (2-4 words, stop-word filtering)
      - Finding next available number (checks remote/local branches + Specs/ dirs)
      - Creating branch: `git checkout -b NNN-short-name`
      - Creating worktree: `git worktree add -b "branch" ".worktrees/branch"`
      - Creating Specs directory: `.worktrees/branch/Specs/branch/`
+   - **CRITICAL**: cd into the new worktree: `cd "$WORKTREE_PATH"`
+   - **CRITICAL**: Only after changing to the worktree, proceed to reading files
 
 4. **Load spec template**:
    - Read `~/.claude/spec-templates/spec-template.md`
 
-5. **Analyze feature description and fill spec**:
+5. **Analyze feature description and fill spec** (ONLY after cd into worktree):
+   - **IMPORTANT**: Do NOT read any codebase files before this step
+   - **IMPORTANT**: Only read codebase files from the clean worktree (prevents uncommitted changes from polluting spec)
    - Extract user goals and actions
    - Identify key concepts: actors, data, workflows
    - Generate 2-4 user stories with priorities (P1, P2, P3, P4)

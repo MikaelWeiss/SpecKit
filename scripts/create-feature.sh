@@ -54,6 +54,9 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
+# Navigate to main repo root if inside a worktree
+navigate_to_repo_root
+
 # Get repository root
 REPO_ROOT=$(get_repo_root)
 cd "$REPO_ROOT"

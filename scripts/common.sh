@@ -124,3 +124,27 @@ file_exists() {
 dir_exists() {
     [[ -d "$1" && -n $(ls -A "$1" 2>/dev/null) ]]
 }
+
+# Check if currently inside a worktree directory
+is_inside_worktree() {
+    local current_dir="$PWD"
+    # Check if any parent directory is named .worktrees
+    while [ "$current_dir" != "/" ]; do
+        if [[ "$(basename "$current_dir")" == ".worktrees" ]]; then
+            return 0
+        fi
+        current_dir="$(dirname "$current_dir")"
+    done
+    return 1
+}
+
+# Navigate to repository root if inside a worktree
+navigate_to_repo_root() {
+    if is_inside_worktree; then
+        local repo_root=$(get_repo_root)
+        echo "[Info] Currently inside a worktree. Navigating to main repository root: $repo_root" >&2
+        cd "$repo_root"
+        return 0
+    fi
+    return 1
+}
