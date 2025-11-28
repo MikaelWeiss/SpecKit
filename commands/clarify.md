@@ -121,7 +121,7 @@ You can accept the suggestion by saying "yes", or choose an alternative, or prov
 
 **Assistant**: [Updates spec with "indefinitely" decision, saves file]
 
-All clarifications complete! Updated spec at: .worktrees/001-habit-tracking/Specs/001-habit-tracking/spec.md
+All clarifications complete! Updated spec at: Specs/habit-tracking/spec.md
 
 Sections updated:
 - Technical Approach (authentication method)

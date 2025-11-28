@@ -5,7 +5,6 @@ set -e
 # Parse arguments
 FEATURE_DESCRIPTION=""
 SHORT_NAME=""
-BRANCH_NUMBER=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -13,25 +12,20 @@ while [[ $# -gt 0 ]]; do
             SHORT_NAME="$2"
             shift 2
             ;;
-        --number)
-            BRANCH_NUMBER="$2"
-            shift 2
-            ;;
         --help|-h)
             cat <<EOF
-Usage: $0 [--short-name <name>] [--number N] <feature_description>
+Usage: $0 [--short-name <name>] <feature_description>
 
-Creates a new feature branch with worktree and Specs directory.
+Creates a new feature spec directory.
 
 Options:
-  --short-name <name>  Custom short name (2-4 words) for the branch
-  --number N           Specify branch number manually (overrides auto-detection)
+  --short-name <name>  Custom short name (2-4 words) for the feature
   --help, -h           Show this help message
 
 Examples:
   $0 "Add user authentication system"
   $0 --short-name "user-auth" "Add user authentication"
-  $0 --number 5 "Implement OAuth2 integration"
+  $0 "Implement OAuth2 integration"
 EOF
             exit 0
             ;;
@@ -53,9 +47,6 @@ fi
 # Get script directory and load common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
-
-# Navigate to main repo root if inside a worktree
-navigate_to_repo_root
 
 # Get repository root
 REPO_ROOT=$(get_repo_root)
@@ -111,97 +102,32 @@ generate_short_name() {
     fi
 }
 
-# Function to find next available branch number
-find_next_number() {
-    local short_name="$1"
-
-    # Check remote branches
-    git fetch --all --prune 2>/dev/null || true
-    local remote_branches=$(git ls-remote --heads origin 2>/dev/null | grep -E "refs/heads/[0-9]+-${short_name}$" | sed 's/.*\/\([0-9]*\)-.*/\1/' | sort -n || echo "")
-
-    # Check local branches
-    local local_branches=$(git branch 2>/dev/null | grep -E "^[* ]*[0-9]+-${short_name}$" | sed 's/^[* ]*//' | sed 's/-.*//' | sort -n || echo "")
-
-    # Check Specs directories
-    local spec_dirs=""
-    if [ -d "$REPO_ROOT/Specs" ]; then
-        spec_dirs=$(find "$REPO_ROOT/Specs" -maxdepth 1 -type d -name "[0-9]*-${short_name}" 2>/dev/null | xargs -n1 basename 2>/dev/null | sed 's/-.*//' | sort -n || echo "")
-    fi
-
-    # Find highest number across all sources
-    local max_num=0
-    for num in $remote_branches $local_branches $spec_dirs; do
-        if [ "$num" -gt "$max_num" ]; then
-            max_num=$num
-        fi
-    done
-
-    # Return next number (formatted as 3 digits)
-    printf "%03d" $((max_num + 1))
-}
-
 # Generate short-name
 if [ -n "$SHORT_NAME" ]; then
     # Use provided short name, just clean it up
-    BRANCH_SUFFIX=$(echo "$SHORT_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-//' | sed 's/-$//')
+    FEATURE_NAME=$(echo "$SHORT_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-//' | sed 's/-$//')
 else
     # Generate from description
-    BRANCH_SUFFIX=$(generate_short_name "$FEATURE_DESCRIPTION")
+    FEATURE_NAME=$(generate_short_name "$FEATURE_DESCRIPTION")
 fi
 
-# Determine branch number
-if [ -z "$BRANCH_NUMBER" ]; then
-    if has_git; then
-        BRANCH_NUMBER=$(find_next_number "$BRANCH_SUFFIX")
-    else
-        # Fall back to checking Specs/ only
-        HIGHEST=0
-        if [ -d "$REPO_ROOT/Specs" ]; then
-            for dir in "$REPO_ROOT/Specs"/*-"$BRANCH_SUFFIX"; do
-                if [ -d "$dir" ]; then
-                    NUM=$(basename "$dir" | sed 's/-.*//')
-                    if [ "$NUM" -gt "$HIGHEST" ]; then
-                        HIGHEST=$NUM
-                    fi
-                fi
-            done
-        fi
-        BRANCH_NUMBER=$(printf "%03d" $((HIGHEST + 1)))
-    fi
-else
-    # Format provided number as 3 digits
-    BRANCH_NUMBER=$(printf "%03d" "$BRANCH_NUMBER")
-fi
-
-# Create branch name
-BRANCH_NAME="${BRANCH_NUMBER}-${BRANCH_SUFFIX}"
-WORKTREE_PATH=".worktrees/$BRANCH_NAME"
-SPEC_DIR="$WORKTREE_PATH/Specs/$BRANCH_NAME"
+# Define paths
+SPEC_DIR="$REPO_ROOT/Specs/$FEATURE_NAME"
 SPEC_FILE="$SPEC_DIR/spec.md"
 
-# Create worktree if using git
-if has_git; then
-    # Create branch and worktree
-    git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH" 2>&1 || {
-        echo "ERROR: Failed to create worktree at $WORKTREE_PATH" >&2
-        echo "This usually means the branch already exists or the path is occupied." >&2
-        exit 1
-    }
-
-    # Create Specs directory inside worktree
-    mkdir -p "$SPEC_DIR"
-else
-    # Without git, just create directories
-    mkdir -p "$SPEC_DIR"
-    echo "Warning: Git not detected. Created directories without worktree." >&2
+# Check if feature already exists
+if [ -d "$SPEC_DIR" ]; then
+    echo "ERROR: Feature directory already exists: $SPEC_DIR" >&2
+    echo "Choose a different name with --short-name or remove the existing directory" >&2
+    exit 1
 fi
+
+# Create spec directory
+mkdir -p "$SPEC_DIR"
 
 # Output variables for use by calling script
 cat <<EOF
-BRANCH_NAME='$BRANCH_NAME'
-BRANCH_NUMBER='$BRANCH_NUMBER'
-SHORT_NAME='$BRANCH_SUFFIX'
-WORKTREE_PATH='$WORKTREE_PATH'
+FEATURE_NAME='$FEATURE_NAME'
 SPEC_DIR='$SPEC_DIR'
 SPEC_FILE='$SPEC_FILE'
 EOF

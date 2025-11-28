@@ -34,8 +34,8 @@ And simplifies everything else:
 - ✅ **Consolidated spec.md** that includes tech approach, data model, and acceptance criteria
 - ✅ **No separate plan/research/contracts** - only what you need
 - ✅ **Shorter templates** (50-70% less content to review)
-- ✅ **Git worktree integration** - each feature in its own isolated workspace
-- ✅ **Bash scripts for deterministic operations** (branch numbering, path detection)
+- ✅ **Smart feature naming** - descriptive, readable directory names
+- ✅ **Bash scripts for deterministic operations** (numbering, path detection)
 - ✅ **Automatic spec validation** with quality checklists
 - ✅ **Auto-update CLAUDE.md** with tech stack from specs
 
@@ -66,7 +66,7 @@ And simplifies everything else:
 - Developers are the primary reviewers of specs
 - You want faster iteration with less documentation overhead
 - You value consolidated, scannable specs over separation
-- You want to work on multiple features in parallel (worktree support)
+- You want a simple, straightforward workflow
 
 ### The Trade-off
 
@@ -76,7 +76,7 @@ Streamlined Specs sacrifices **thoroughness and stakeholder-friendliness** for *
 
 **SpecKit** per feature:
 ```
-Specs/001-feature/
+Specs/feature-name/
 ├── spec.md
 ├── plan.md
 ├── research.md
@@ -95,21 +95,20 @@ Specs/001-feature/
 
 **Streamlined Specs** per feature:
 ```
-.worktrees/001-feature/Specs/001-feature/
+Specs/user-auth/
 ├── spec.md        # Consolidated (includes plan, research, data model)
 ├── tasks.md       # Executable implementation
 └── checklist.md   # Quality validation (auto-generated)
 ```
 **Total: 3 files** (plus 1 project-level constitution.md)
 
-**Still 60-70% fewer files than SpecKit!**
+**60-70% fewer files than SpecKit!**
 
 ## Installation
 
 ### Prerequisites
 
 - [Claude Code](https://docs.claude.com/claude-code) installed
-- Git repository (for worktree support)
 
 ### Quick Install (One-Liner)
 
@@ -170,10 +169,9 @@ This only needs to be done **once per project**.
 ```
 
 This will:
-- Generate a short name: `001-user-auth`
-- Create a new branch: `001-user-auth`
-- **Create a worktree**: `.worktrees/001-user-auth` (isolated workspace!)
-- Create spec: `.worktrees/001-user-auth/Specs/001-user-auth/spec.md`
+- Generate a short name: `user-auth`
+- Create spec directory: `Specs/user-auth/`
+- Create spec: `Specs/user-auth/spec.md`
 - Fill the spec with:
   - User stories (P1, P2, P3) - prioritized and independently testable
   - Technical approach
@@ -183,7 +181,6 @@ This will:
 ### 4. Clarify if Needed (Optional)
 
 ```bash
-cd .worktrees/001-user-auth/
 /clarify
 ```
 
@@ -195,7 +192,7 @@ If the spec has ambiguities, this will ask up to 3 targeted questions and update
 /tasks
 ```
 
-Creates `Specs/001-user-auth/tasks.md` with:
+Creates `Specs/user-auth/tasks.md` with:
 - Tasks organized by user story
 - Clear dependencies
 - Exact file paths
@@ -213,48 +210,14 @@ Executes tasks phase-by-phase:
 - Reports progress
 - Builds your feature
 
-### 7. Push When Ready
+### 7. Commit When Ready
 
 ```bash
-# Work is already in the worktree
 git add .
 git commit -m "Add OAuth2 authentication"
-git push -u origin 001-user-auth
 
-# Create PR, merge, done!
+# Create PR if using branches, or commit to main
 ```
-
-## Worktree Workflow
-
-One of the best features is **git worktree integration**. Each feature gets its own isolated workspace:
-
-```bash
-# Main repo stays clean
-your-project/
-├── .git/
-├── Strive/                    # Your main code
-└── Specs/
-    └── constitution.md        # Project principles
-
-# Each feature in its own worktree
-.worktrees/
-├── 001-user-auth/             # Feature 1 workspace
-│   ├── Strive/                # Code for feature 1
-│   └── Specs/001-user-auth/
-│       ├── spec.md
-│       └── tasks.md
-└── 002-notifications/         # Feature 2 workspace (parallel!)
-    ├── Strive/                # Code for feature 2
-    └── Specs/002-notifications/
-        ├── spec.md
-        └── tasks.md
-```
-
-Benefits:
-- Work on multiple features simultaneously without branch switching
-- No conflicts between features in development
-- Easy context switching: `cd .worktrees/001-user-auth/`
-- Clean separation of concerns
 
 ## Quality Features
 
@@ -276,7 +239,7 @@ When you run `/specify`, the system automatically validates your spec against a 
 2. Checklist is created automatically
 3. Spec is validated against checklist
 4. If issues found: spec is auto-fixed (up to 3 iterations)
-5. Final checklist saved at `Specs/NNN-feature/checklist.md`
+5. Final checklist saved at `Specs/feature-name/checklist.md`
 
 **Benefits:**
 - Catches incomplete requirements before implementation
@@ -291,8 +254,8 @@ When you run `/tasks`, your `CLAUDE.md` is automatically updated with the tech s
 ```markdown
 ## Active Technologies
 <!-- SPEC_TECH_START -->
-- 001-user-auth: Swift 6.2 + SwiftUI, Clean Architecture (added 2025-10-24)
-- 002-notifications: EventKit, UserNotifications (added 2025-10-25)
+- user-auth: Swift 6.2 + SwiftUI, Clean Architecture (added 2025-10-24)
+- notifications: EventKit, UserNotifications (added 2025-10-25)
 <!-- SPEC_TECH_END -->
 ```
 
@@ -307,12 +270,12 @@ When you run `/tasks`, your `CLAUDE.md` is automatically updated with the tech s
 Deterministic operations use bash scripts instead of Claude executing commands inline:
 
 **Scripts** (in `~/.claude/spec-scripts/`):
-- `create-feature.sh` - Branch naming, number detection, worktree creation
+- `create-feature.sh` - Feature name generation and directory creation
 - `find-spec.sh` - Locates current spec/tasks files reliably
 - `update-context.sh` - Parses spec and updates CLAUDE.md
 
 **Benefits:**
-- Consistent branch numbering (no duplicates)
+- Consistent feature naming (no conflicts)
 - Reliable path detection (no hallucination)
 - Deterministic behavior (testable, debuggable)
 - SpecKit-style bash variable output (`eval $(script)`)
@@ -337,7 +300,7 @@ Create or update project constitution with core principles and governance.
 ```
 
 ### `/specify "feature description"`
-Create a new feature specification with worktree.
+Create a new feature specification.
 
 **Usage**: Start each new feature
 ```bash
@@ -351,7 +314,6 @@ Optional clarification of ambiguous requirements (max 3 questions).
 
 **Usage**: Run if spec needs clarification
 ```bash
-cd .worktrees/001-feature/
 /clarify
 ```
 
@@ -382,13 +344,12 @@ cd ~/code/TaskTracker
 
 # === Feature 1: Core Task Management (MVP) ===
 /specify "Users can create, view, and complete daily tasks"
-# → Creates .worktrees/001-task-management/
+# → Creates Specs/task-management/
 # → Spec has 3 user stories:
 #    P1: Create and list tasks
 #    P2: Mark tasks complete
 #    P3: Delete tasks
 
-cd .worktrees/001-task-management/
 /tasks
 # → Generates tasks organized by story
 
@@ -397,16 +358,12 @@ cd .worktrees/001-task-management/
 
 git add .
 git commit -m "Implement core task management"
-git push -u origin 001-task-management
-# → Create PR, get review, merge
+# → Create PR or commit to main
 
-# === Feature 2: Reminders (parallel development!) ===
-cd ~/code/TaskTracker
+# === Feature 2: Reminders ===
 /specify "Add reminder notifications for upcoming tasks"
-# → Creates .worktrees/002-reminders/
-# → Can develop while Feature 1 is in code review!
+# → Creates Specs/reminders/
 
-cd .worktrees/002-reminders/
 /tasks
 /implement
 # ... and so on
@@ -421,12 +378,12 @@ cd .worktrees/002-reminders/
 - **Testable**: Clear acceptance criteria (Given/When/Then)
 - **Incremental**: Implement P1, test, deploy, then add P2, etc.
 
-### Worktrees
+### Specs Organization
 
-- One feature = one worktree
-- Keep worktrees focused and short-lived
-- Remove worktree after merging: `git worktree remove .worktrees/001-feature`
-- Add `.worktrees/` to `.gitignore` (handled by `/setup-specs`)
+- One feature = one spec directory in `Specs/`
+- Use descriptive names (e.g., `user-auth`, `payment-processing`)
+- Keep specs focused and actionable
+- Archive completed specs if desired (move to `Specs/archive/`)
 
 ### Constitution
 
@@ -443,8 +400,7 @@ cd .worktrees/002-reminders/
 | Template length | Long, extensive | Short, focused |
 | Spec validation | Multi-pass with checklists | Automatic with checklist |
 | Context management | Manual | Auto-update CLAUDE.md |
-| Bash scripts | 7 complex scripts | 4 simple scripts |
-| Worktree support | No | Yes (built-in) |
+| Bash scripts | 7 complex scripts | 3 simple scripts |
 | Context usage | High (many files) | Low (consolidated) |
 | Setup complexity | Medium | Low |
 | Maintenance | Higher | Lower |
@@ -465,13 +421,13 @@ SpecKit/
 │   └── checklist-template.md     # Spec validation checklist
 ├── scripts/
 │   ├── common.sh                 # Shared utilities
-│   ├── create-feature.sh         # Branch/worktree creation
+│   ├── create-feature.sh         # Feature directory creation
 │   ├── find-spec.sh              # Spec file detection
 │   └── update-context.sh         # CLAUDE.md updater
 └── commands/
     ├── setup-specs.md            # Initialize project
     ├── constitution.md           # Define principles
-    ├── specify.md                # Create feature spec + worktree + validation
+    ├── specify.md                # Create feature spec + validation
     ├── clarify.md                # Optional clarification
     ├── tasks.md                  # Generate tasks + update context
     └── implement.md              # Execute implementation
@@ -482,8 +438,8 @@ SpecKit/
 **Q: Can I use this with existing SpecKit projects?**
 A: Yes, but you'll need to consolidate your existing specs into the new format. The constitution can be reused as-is.
 
-**Q: Do I have to use worktrees?**
-A: No, but it's highly recommended. The `/specify` command creates worktrees by default, but you can work in regular branches if you prefer.
+**Q: Can I use branches for different features?**
+A: Yes! The system works with your branching strategy. You can create branches and work on features in separate branches if desired.
 
 **Q: Can I customize the templates?**
 A: Yes! Edit the templates in `~/.claude/spec-templates/` after installation.

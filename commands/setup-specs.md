@@ -35,7 +35,6 @@ Bootstrap a project for streamlined spec-driven development by creating the nece
 5. **Create .gitignore entry** (if git repo):
    - Check if `.gitignore` exists
    - If not, create it
-   - Add `.worktrees/` to gitignore (one worktree entry per feature)
    - Add `Specs/**/*.swp` and `Specs/**/.*` to ignore temp files
 
 6. **Report completion**:

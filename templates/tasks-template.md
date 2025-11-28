@@ -1,6 +1,6 @@
 # Tasks: [FEATURE_NAME]
 
-**Input**: Specs/[BRANCH_NAME]/spec.md
+**Input**: Specs/[FEATURE_NAME]/spec.md
 **Format**: `- [ ] T### [P?] [US#?] Description with file path`
 - **[P]**: Parallelizable (different files, no dependencies)
 - **[US#]**: User story number (US1, US2, etc.)

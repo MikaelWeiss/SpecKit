@@ -19,94 +19,64 @@ get_repo_root() {
     fi
 }
 
-# Get current branch
-get_current_branch() {
-    if git rev-parse --abbrev-ref HEAD >/dev/null 2>&1; then
-        git rev-parse --abbrev-ref HEAD
-    else
-        echo "main"
-    fi
-}
-
 # Check if we have git available
 has_git() {
     git rev-parse --show-toplevel >/dev/null 2>&1
 }
 
-# Check if current branch follows feature branch naming (NNN-name)
-check_feature_branch() {
-    local branch="$1"
-    local has_git_repo="$2"
-
-    if [[ "$has_git_repo" != "true" ]]; then
-        echo "[Warning] Git repository not detected; skipped branch validation" >&2
-        return 0
-    fi
-
-    if [[ ! "$branch" =~ ^[0-9]{3}- ]]; then
-        echo "ERROR: Not on a feature branch. Current branch: $branch" >&2
-        echo "Feature branches should be named like: 001-feature-name" >&2
-        return 1
-    fi
-
-    return 0
-}
-
-# Find feature directory by numeric prefix
-# Supports multiple branches working on same spec (e.g., 004-fix, 004-feature both use Specs/004-main/)
+# Find feature directory in Specs
+# Looks for a feature directory in Specs/ based on current context
 find_feature_dir() {
     local repo_root="$1"
-    local branch_name="$2"
     local specs_dir="$repo_root/Specs"
 
-    # Extract numeric prefix from branch (e.g., "004" from "004-whatever")
-    if [[ ! "$branch_name" =~ ^([0-9]{3})- ]]; then
-        # If branch doesn't have numeric prefix, use branch name exactly
-        echo "$specs_dir/$branch_name"
-        return
-    fi
+    # If we're currently in a Specs subdirectory, use that
+    local current_dir="$PWD"
+    while [ "$current_dir" != "/" ] && [ "$current_dir" != "$repo_root" ]; do
+        if [[ "$(dirname "$current_dir")" == "$specs_dir" ]]; then
+            # We're directly inside a feature directory
+            echo "$current_dir"
+            return 0
+        fi
+        if [[ "$current_dir" == "$specs_dir" ]]; then
+            # We're in Specs/ itself, can't determine feature
+            break
+        fi
+        current_dir="$(dirname "$current_dir")"
+    done
 
-    local prefix="${BASH_REMATCH[1]}"
-
-    # Search for directory in Specs/ that starts with this prefix
-    local matches=()
+    # Otherwise, look for the most recently modified feature directory
     if [[ -d "$specs_dir" ]]; then
-        for dir in "$specs_dir"/"$prefix"-*; do
-            if [[ -d "$dir" ]]; then
-                matches+=("$(basename "$dir")")
-            fi
-        done
+        local latest_dir=$(find "$specs_dir" -maxdepth 1 -type d ! -name "Specs" ! -name ".*" 2>/dev/null | grep -v "^$specs_dir$" | sort -t/ -k2 | tail -1)
+        if [[ -n "$latest_dir" ]]; then
+            echo "$latest_dir"
+            return 0
+        fi
     fi
 
-    # Handle results
-    if [[ ${#matches[@]} -eq 0 ]]; then
-        # No match found - return the branch name path
-        echo "$specs_dir/$branch_name"
-    elif [[ ${#matches[@]} -eq 1 ]]; then
-        # Exactly one match - perfect!
-        echo "$specs_dir/${matches[0]}"
-    else
-        # Multiple matches - use first one but warn
-        echo "Warning: Multiple spec directories found with prefix '$prefix': ${matches[*]}" >&2
-        echo "$specs_dir/${matches[0]}"
-    fi
+    # No feature directory found
+    echo ""
+    return 1
 }
 
 # Get all feature paths (outputs bash variables)
 get_feature_paths() {
     local repo_root=$(get_repo_root)
-    local current_branch=$(get_current_branch)
     local has_git_repo="false"
 
     if has_git; then
         has_git_repo="true"
     fi
 
-    local feature_dir=$(find_feature_dir "$repo_root" "$current_branch")
+    local feature_dir=$(find_feature_dir "$repo_root")
+
+    if [[ -z "$feature_dir" ]]; then
+        echo "ERROR: Could not find feature directory. Are you in a Specs directory?" >&2
+        return 1
+    fi
 
     cat <<EOF
 REPO_ROOT='$repo_root'
-CURRENT_BRANCH='$current_branch'
 HAS_GIT='$has_git_repo'
 FEATURE_DIR='$feature_dir'
 SPEC_FILE='$feature_dir/spec.md'
@@ -123,28 +93,4 @@ file_exists() {
 # Check if directory exists and is not empty
 dir_exists() {
     [[ -d "$1" && -n $(ls -A "$1" 2>/dev/null) ]]
-}
-
-# Check if currently inside a worktree directory
-is_inside_worktree() {
-    local current_dir="$PWD"
-    # Check if any parent directory is named .worktrees
-    while [ "$current_dir" != "/" ]; do
-        if [[ "$(basename "$current_dir")" == ".worktrees" ]]; then
-            return 0
-        fi
-        current_dir="$(dirname "$current_dir")"
-    done
-    return 1
-}
-
-# Navigate to repository root if inside a worktree
-navigate_to_repo_root() {
-    if is_inside_worktree; then
-        local repo_root=$(get_repo_root)
-        echo "[Info] Currently inside a worktree. Navigating to main repository root: $repo_root" >&2
-        cd "$repo_root"
-        return 0
-    fi
-    return 1
 }

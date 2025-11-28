@@ -1,6 +1,5 @@
 # Feature: [FEATURE_NAME]
 
-**Branch**: `[BRANCH_NAME]`
 **Created**: [DATE]
 **Status**: Draft
 

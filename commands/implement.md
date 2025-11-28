@@ -32,7 +32,7 @@ Execute the implementation plan by processing and completing all tasks defined i
 
 3. **Verify project setup**:
    - Check for necessary project files (Package.swift, .xcodeproj, package.json, etc.)
-   - Verify ignore files exist (.gitignore for .worktrees/, temp files, etc.)
+   - Verify ignore files exist (.gitignore for temp files, etc.)
    - If missing critical setup, create it before proceeding
 
 4. **Execute tasks phase by phase**:
